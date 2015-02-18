@@ -1,0 +1,27 @@
+filename = 'files/A-Z.wav';
+Fs = 16000;
+Nframe = 320;
+Nham = 480;
+
+ham = hamming( Nham );
+
+% Read audiofile. y is the data, Fs is the sampling rate
+[ s, Fs ] = audioread( filename );
+s = s(1:end, 1);
+%soundsc( s(1:end,1), Fs )
+A = s(1:40000);
+F = s(250000:300000);
+
+plot( A )
+soundsc(A, Fs);
+waitforbuttonpress
+soundsc(F,Fs);
+
+
+[ coeff, E ] = lpc( s, 14 );
+
+% LP residual
+r = filter( coeff, 1, s);
+
+
+

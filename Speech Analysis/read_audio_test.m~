@@ -1,0 +1,12 @@
+% Creates a AudioRecorder object
+mic = dsp.AudioRecorder;
+mic.SampleRate = 16000;
+H = dsp.Au
+% Create empty vector to store recorded data
+y = [];
+
+% Collect 50 steps of voice from microphone and add to y
+for i = 1:10;
+    y = [y; step(mic)];
+end
+

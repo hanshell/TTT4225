@@ -34,27 +34,50 @@ stop = start + N_frame;
 % being compressed are just zero-padding.
 padded_sig = zeros(N_ham,1);
 
-residue_sig = [];
+% Array for the corresponding error-signal. or residual-signal.
+err_sig = [];
+%Array for the restored signal from the LP-coefficcients.
 restored = [];
+% array to store pitch placing
+pitches = [];
+% save info about the previous signal
+prevVoiced = false;
+prevPitchPos = start;
+% the pitch-period in number of frames
+pitchPeriod = 0;
 for i = 1:iter;
-    temp_sig = s(start : stop);
-    padded_sig((N_ham - N_frame)/2 : (N_ham - N_frame)/2 + N_frame) = temp_sig;
-    temp_coeffs = AR_coeffs(temp_sig, Fs);
-    temp_residue = filter(temp_coeffs,1,temp_sig);
-    start = start + N_frame;
-    stop = start + N_frame; 
-    residue_sig = [residue_sig; filter(temp_coeffs,1,temp_sig)];
-    restored = [restored; filter(1,temp_coeffs, temp_residue)];
-    temp_sig_ham = padded_sig .* hamm;
-    unpadded_sig_ham = temp_sig_ham((N_ham - N_frame)/2 : (N_ham - N_frame)/2 + N_frame);
     
-    unpadded_sig_ham1 = fft(unpadded_sig_ham);  
-    figure; hold on;
-    subplot(2,1,1)
-    plot(20*log10(abs(unpadded_sig_ham1)))
-    subplot(2,1,2)
-    plot(20*log10(abs(fft(temp_sig))))
-    waitforbuttonpress
+    temp_sig = s(start : stop);
+    % insert our signal to the middel of our zero-array
+    padded_sig((N_ham - N_frame)/2 : (N_ham - N_frame)/2 + N_frame) = temp_sig;
+    % coefficcients from the little frame of signal
+    temp_coeffs = AR_coeffs(temp_sig, Fs);
+    % error/residual-signal for the litte frame of signal
+    temp_err = filter(temp_coeffs,1,temp_sig);
+    % change where to start and stop the frame for the next iteration
+    start = start + N_frame;
+    stop = start + N_frame;
+    % add our array
+    err_sig = [err_sig; temp_err];
+    % add to aray
+    restored = [restored; filter(1,temp_coeffs, temp_err)];
+    % Apply the window to our padded signal
+    temp_sig_ham = padded_sig .* hamm;
+    % remove padding and restore the signal to its real size
+    unpadded_sig_ham = temp_sig_ham((N_ham - N_frame)/2 : (N_ham - N_frame)/2 + N_frame);
+    % compute the fft to our unpadded ham signal
+    %unpadded_sig_ham_fft = fft(unpadded_sig_ham_fft); 
+    % have to use logarithmic scale in order to get funcitons that are easy
+    % to extract info from
+%     figure; hold on;
+%     subplot(2,1,1)
+%     plot(20*log10(abs(unpadded_sig_ham_fft)))
+%     subplot(2,1,2)
+%     plot(20*log10(abs(fft(temp_sig))))
+%     waitforbuttonpress
+    
+    addPitch(prevVoiced, pitches, prevPitchPos, pitchPeriod, start, stop)
+    gain = gain_estimation(temp_err);
 end
 
 

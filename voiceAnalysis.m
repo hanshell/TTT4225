@@ -7,6 +7,9 @@ file_anvendt='Speech Analysis/files/anvsb1.wav';
 voiced_sound=74000:83000; % Samples of the first sound file with two sequential vowels (a and e)
 unvoiced_sound=46000:48000; % Samples of the second osund file with an unvoiced sound (f)
 
+voiced_sound_audio=y1(voiced_sound);
+unvoiced_sound_audio=y2(unvoiced_sound);
+
 figure(1)
 
 subplot(4,1,1);
@@ -46,16 +49,19 @@ y3=y1(10000:100000);
 
 [lpc_oe, g]=lpc(y3, 14);
 
-oe_output=filter(1, lpc_oe, y3);
+oe=filter(lpc_oe, 1, y3);
 
-sound(y3, Fs1);
-pause(7);
-sound(oe_output./20, Fs1);
+oe_output=filter(1, lpc_oe, oe);
+
+
+%sound(y3, Fs1);
+%pause(7);
+%sound(oe_output, Fs1);
 
 figure
-subplot(3,1,1),
+subplot(2,1,1);
 plot(y3);
-subplot(3,1,2);
+subplot(2,1,2);
 plot(oe_output);
-subplot(3,1,3);
-plot((oe_output)-y3);
+
+%%

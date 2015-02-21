@@ -7,11 +7,13 @@ N_ham = 480;
 % 16000 * (50*10^-3)
 N_pitch = 800;
 
+
+% Create a hamming window of length N_ham
 hamm = hamming( N_ham );
 
 % Read audiofile. y is the data, Fs is the sampling rate
 [ s, Fs ] = audioread( filename );
-%s = s(1:end, 1);
+
 %soundsc( s(1:end,1), Fs )
 O = s(14000:17400);
 
@@ -19,15 +21,17 @@ O = s(14000:17400);
 % pitch window.
 iter = floor((length(s) - N_pitch) / N_frame) + 1;
 
-
-
-%figure
-%hold on
-%plot( O )
-%soundsc(O, Fs);
+% Set start and stop-points for the frame. Cant start completely at the
+% beginning since we have the window and pitch estimation segment should
+% surround the frame symmetrically.
 start = N_pitch/2 - N_frame/2;
 stop = start + N_frame;
 
+% To be able to multiply our signal with the window the arrays mst have the
+% same length. Therefor we zero-pad in the front and in the end. ??? When
+% doing this and then multiplying by the window, dont we loose a lot of
+% what is good with a Hamming window? The part of the singnal that is mostly
+% being compressed are just zero-padding.
 padded_sig = zeros(N_ham,1);
 
 residue_sig = [];

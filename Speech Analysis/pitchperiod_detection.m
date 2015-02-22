@@ -3,9 +3,13 @@ function [ pitchperiod ] = pitchperiod_detection( signalsegment )
 %   
 Fs=16000; % Sampling rate
 
-[period, value]=max(signalsegment(Fs/500:Fs/50));
+xcorr_signalsegment=xcorr(signalsegment);
 
-pitchperiod=period;
+plot(xcorr_signalsegment);
+
+[value, period]=max(xcorr_signalsegment(800+Fs/500:800+Fs/50));
+
+pitchperiod=period+Fs/500; % Add offset due to maximum autocorrelation value starting at 800
 
 end
 

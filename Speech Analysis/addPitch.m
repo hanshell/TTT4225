@@ -1,4 +1,4 @@
-function [ ] = addPitch( wasVoiced, pitch, prevPitchPos, pitchPeriod, start, stop )
+function [ pitches ] = addPitch( wasVoiced, prevPitchPos, pitchPeriod, start, stop )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
     nxtIndex = start;

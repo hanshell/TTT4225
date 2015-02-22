@@ -39,7 +39,7 @@ err_sig = [];
 %Array for the restored signal from the LP-coefficcients.
 restored = [];
 % array to store pitch placing
-pitches = [];
+pitches = zeros(1, length(s));
 % save info about the previous signal
 prevVoiced = false;
 prevPitchPos = start;
@@ -55,6 +55,7 @@ for i = 1:iter;
     % error/residual-signal for the litte frame of signal
     temp_err = filter(temp_coeffs,1,temp_sig);
     % change where to start and stop the frame for the next iteration
+    pitches(start:stop) = addPitch(prevVoiced, prevPitchPos, pitchPeriod, start, stop);
     start = start + N_frame;
     stop = start + N_frame;
     % add our array
@@ -76,21 +77,9 @@ for i = 1:iter;
 %     plot(20*log10(abs(fft(temp_sig))))
 %     waitforbuttonpress
     
-    addPitch(prevVoiced, pitches, prevPitchPos, pitchPeriod, start, stop)
+    
     gain = gain_estimation(temp_err);
 end
 
 
-%[ coeff, E ] = lpc( s, 14 );
-
-% LP residual
-%r = filter( coeff, 1, s);
-
-
-%c = xcorr(O);
-%R = [];
-
-%for i = 1:length(c);
-%    R = [R ; (c(i)/max(c))];
-%end
 

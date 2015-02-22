@@ -1,0 +1,4 @@
+filename = 'files/anvsb1.wav';
+
+% Read audiofile. y is the data, Fs is the sampling rate
+[y, Fs] = audioread(filename);

@@ -45,11 +45,12 @@ prevVoiced = 0;
 prevPitchPos = start_sig_frame;
 % the pitch-period in number of frames
 pitchPeriod = 0;
+ctr1 = 0;
+ctr2 = 0;
 for i = 1:iter;
     pitch_frame = s(start_pitch_frame : stop_pitch_frame);
-    length(pitch_frame)
     sig_frame = s(start_sig_frame : stop_sig_frame);
-    length(sig_frame)
+    
     % insert our signal to the middel of our zero-array
     padded_sig((N_ham - N_frame)/2 + 1 : (N_ham - N_frame)/2 + N_frame) = sig_frame;
     % Apply the window to our padded signal
@@ -63,12 +64,13 @@ for i = 1:iter;
 
     % check whether our signal is voiced or unvoiced
     if voiceclassification(pitch_frame) == 1;
-        pitchPeriod = pitchperiod_detection(pitch_frame);
+        pitchPeriod = pitchperiod_detection(pitch_frame)
         [pitches(start_sig_frame : stop_sig_frame), prevPitchPos] = addPitch(prevVoiced, prevPitchPos, pitchPeriod, start_sig_frame, stop_sig_frame);
         prevVoiced = 1;
-        
+        ctr1 = ctr1 + 1;
     else
         prevVoiced = 0;
+        ctr2 = ctr2 + 1;
     end
     
     
@@ -89,8 +91,9 @@ for i = 1:iter;
     
     
     gain = gain_estimation(temp_err);
-    
+    %waitforbuttonpress
 end
-
+ctr1
+ctr2
 
 

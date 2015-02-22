@@ -5,7 +5,7 @@ Fs=16000; % Sampling rate
 
 xcorr_signalsegment=xcorr(signalsegment);
 
-plot(xcorr_signalsegment);
+%plot(xcorr_signalsegment);
 
 [value, period]=max(xcorr_signalsegment(800+Fs/500:800+Fs/50));
 

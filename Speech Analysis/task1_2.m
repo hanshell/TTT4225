@@ -1,4 +1,4 @@
-filename = 'files/original.wav';
+filename = 'files/baba1.wav';
 
 % 16000 * (20*10^-3)
 N_frame = 320;
@@ -47,8 +47,7 @@ prevVoiced = 0;
 prevPitchPos = start_sig_frame;
 % the pitch-period in number of frames
 pitchPeriod = 0;
-ctr1 = 0;
-ctr2 = 0;
+
 synth = [];
 for i = 1:iter;
     pitch_frame = s(start_pitch_frame : stop_pitch_frame);
@@ -102,7 +101,6 @@ for i = 1:iter;
     
     %waitforbuttonpress
 end
-ctr1
-ctr2
+
 
 

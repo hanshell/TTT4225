@@ -1,16 +1,28 @@
-function [ pitches ] = addPitch( wasVoiced, prevPitchPos, pitchPeriod, start, stop )
+function [ temp_pitches , prevPp ] = addPitch( wasVoiced, prevPitchPos, pitchPeriod, start, stop )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-    nxtIndex = start;
-    while nxtIndex <= stop;
+    %nxtIndex = start;
+    
+    temp_pitches = zeros(1,(stop-start)+1);
+    start
+    
+    
         if wasVoiced;
-            pitch(prevPitchPos+pitchPeriod) = 1;
+            %disp('Voiced')
+            temp_pitches(prevPitchPos + pitchPeriod : pitchPeriod : end) = 1;
+            %disp('temp_pitch voiced')
+            %length(temp_pitches)
         else
-            pitch(nxtIndex) = 1;
+            %disp('unvoiced')
+            temp_pitches(1 : pitchPeriod : end) = 1;
+            %disp('temp_pitch unvoiced')
+            %length(temp_pitches)
         end
-        nxtIndex = nxtIndex + pitchPeriod;
-        prevPitchPos = prevPitchPos+pitchPeriod;
-    end
+        
+        prevPp = start + (max(find(temp_pitches)) - 1);
+    %    nxtIndex = nxtIndex + pitchPeriod;
+     %   prevPitchPos = prevPitchPos+pitchPeriod;
+        
 
 end
 

@@ -41,7 +41,7 @@ restored = [];
 % array to store pitch placing
 pitches = zeros(1, length(s));
 % save info about the previous signal
-prevVoiced = false;
+prevVoiced = 0;
 prevPitchPos = start;
 % the pitch-period in number of frames
 pitchPeriod = 0;
@@ -55,7 +55,9 @@ for i = 1:iter;
     % error/residual-signal for the litte frame of signal
     temp_err = filter(temp_coeffs,1,temp_sig);
     % change where to start and stop the frame for the next iteration
-    pitches(start:stop) = addPitch(prevVoiced, prevPitchPos, pitchPeriod, start, stop);
+    if voiceclassification(temp_sig) == 1;
+        pitches(start:stop) = addPitch(prevVoiced, prevPitchPos, pitchPeriod, start, stop);
+    end
     start = start + N_frame;
     stop = start + N_frame;
     % add our array
@@ -68,6 +70,9 @@ for i = 1:iter;
     unpadded_sig_ham = temp_sig_ham((N_ham - N_frame)/2 : (N_ham - N_frame)/2 + N_frame);
     % compute the fft to our unpadded ham signal
     %unpadded_sig_ham_fft = fft(unpadded_sig_ham_fft); 
+    
+  
+    
     % have to use logarithmic scale in order to get funcitons that are easy
     % to extract info from
 %     figure; hold on;

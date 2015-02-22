@@ -1,6 +1,6 @@
 % Run record_audio.m before running this script!
 
-myRecording_sample=myRecording(1:320);
+myRecording_sample=myRecording(1:800);
 xcorr_myRecording_sample=xcorr(myRecording_sample);
 xcorr_medianfiltered=medfilt1(xcorr_myRecording_sample, 10);
 threshold=0.2;

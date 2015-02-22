@@ -15,9 +15,9 @@ peaks=findpeaks(xcorr_medianfiltered);
 ratio=mean(peaks)/max(peaks);
 
 if ratio>=threshold
-    detection=0;
-else
     detection=1;
+else
+    detection=0;
 end
 
 classification=detection;

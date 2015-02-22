@@ -5,7 +5,7 @@ function [ classification ] = voiceclassification( audio_segment )
 %   
 xcorr_audio_segment=xcorr(audio_segment);
 xcorr_medianfiltered=medfilt1(xcorr_audio_segment, 10);
-threshold=0.2;
+threshold=0.27;
 
 detection=-1; % 0 if voiced, 1 if unvoiced;
 

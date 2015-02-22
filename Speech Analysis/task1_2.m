@@ -14,6 +14,8 @@ hamm = hamming( N_ham );
 % Read audiofile. y is the data, Fs is the sampling rate
 [ s, Fs ] = audioread( filename );
 
+
+
 % Number of total iterations. The 1 comes from the first placing of the
 % pitch window.
 iter = floor((length(s) - N_pitch) / N_frame) + 1;
@@ -47,6 +49,7 @@ prevPitchPos = start_sig_frame;
 pitchPeriod = 0;
 ctr1 = 0;
 ctr2 = 0;
+synth = [];
 for i = 1:iter;
     pitch_frame = s(start_pitch_frame : stop_pitch_frame);
     sig_frame = s(start_sig_frame : stop_sig_frame);
@@ -62,16 +65,22 @@ for i = 1:iter;
     % error/residual-signal for the litte frame of signal
     temp_err = filter(temp_coeffs,1,unpadded_sig_ham);
 
+    gain = gain_estimation(temp_err);    
+   
     % check whether our signal is voiced or unvoiced
     if voiceclassification(pitch_frame) == 1;
-        pitchPeriod = pitchperiod_detection(pitch_frame)
+        pitchPeriod = pitchperiod_detection(pitch_frame);
         [pitches(start_sig_frame : stop_sig_frame), prevPitchPos] = addPitch(prevVoiced, prevPitchPos, pitchPeriod, start_sig_frame, stop_sig_frame);
+        pitches(start_sig_frame : stop_sig_frame) = pitches(start_sig_frame : stop_sig_frame)*gain;
         prevVoiced = 1;
         ctr1 = ctr1 + 1;
     else
         prevVoiced = 0;
+        pitches(start_sig_frame : stop_sig_frame) = randn(1, length(sig_frame))*gain*0.1;
         ctr2 = ctr2 + 1;
     end
+    
+    synth = [synth, filter(1, temp_coeffs, pitches(start_sig_frame : stop_sig_frame))];
     
     
     % change where to start and stop the frame for the next iteration
@@ -90,7 +99,7 @@ for i = 1:iter;
     %unpadded_sig_ham_fft = fft(unpadded_sig_ham_fft); 
     
     
-    gain = gain_estimation(temp_err);
+    
     %waitforbuttonpress
 end
 ctr1

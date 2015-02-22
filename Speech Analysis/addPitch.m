@@ -4,8 +4,6 @@ function [ temp_pitches , prevPp ] = addPitch( wasVoiced, prevPitchPos, pitchPer
     %nxtIndex = start;
     
     temp_pitches = zeros(1,(stop-start)+1);
-    start
-    
     
         if wasVoiced;
             %disp('Voiced')

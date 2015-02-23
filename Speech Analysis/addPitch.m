@@ -4,10 +4,11 @@ function [ temp_pitches , prevPp ] = addPitch( wasVoiced, prevPitchPos, pitchPer
     %nxtIndex = start;
     
     temp_pitches = zeros(1,(stop-start)+1);
-    
+    N_frame = 320;
         if wasVoiced;
-            disp('Voiced')
-            temp_pitches((start - prevPitchPos) + pitchPeriod : pitchPeriod : end) = 1;
+            %disp('Voiced')
+            temp_pitches((stop - N_frame)+1 - prevPitchPos + pitchPeriod : pitchPeriod : end) = 1;
+            %temp_pitches((start - prevPitchPos) + pitchPeriod : pitchPeriod : end) = 1;
             %disp('temp_pitch voiced')
             %length(temp_pitches)
             

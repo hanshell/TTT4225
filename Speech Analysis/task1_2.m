@@ -49,15 +49,16 @@ for i = 1:iter;
     pitch_frame = s(start_pitch_frame : stop_pitch_frame);
     sig_frame = s(start_sig_frame : stop_sig_frame);
     
-    
     % Apply the window to our padded signal
-    temp_sig_ham = sig_frame .* hamm;
+    sig_ham = sig_frame .* hamm;
     pitch_ham = pitch_frame.*hamming(N_pitch);
     % coefficcients from the little frame of signal
-    temp_coeffs = AR_coeffs(temp_sig_ham, Fs);
+    coeffs = lpc(sig_ham, 14);
     
     % error/residual-signal for the litte frame of signal
-    temp_err = filter(temp_coeffs,1,temp_sig_ham);
+    temp_err = filter(coeffs,1,sig_ham);
+    
+    %figure; subplot(2,1,1);plot(temp_sig_ham);subplot(2,1,2);plot(temp_err);
 
     gain = gain_estimation(temp_err);    
    
@@ -74,11 +75,11 @@ for i = 1:iter;
         
     end
     
-    a = fir1(8,1000/8000,'low');
+    a = fir1(8,1000/(Fs/2),'low');
     
     pitches(start_sig_frame : stop_sig_frame) = filter(a,1,pitches(start_sig_frame : stop_sig_frame));
-    
-    temp_synth = filter(1, temp_coeffs, pitches(start_sig_frame : stop_sig_frame));
+
+    temp_synth = filter(1, coeffs, pitches(start_sig_frame : stop_sig_frame));
     if i ~= 1;
         synth(start_sig_frame : (stop_sig_frame - N_frame)) = synth(start_sig_frame : stop_sig_frame - N_frame) + temp_synth(1 : (stop_sig_frame - N_frame) - start_sig_frame+1);
         synth(stop_sig_frame - N_frame + 1 : stop_sig_frame) = temp_synth((stop_sig_frame - N_frame) - start_sig_frame+2 : end); 
@@ -96,11 +97,11 @@ for i = 1:iter;
     stop_sig_frame = stop_sig_frame + N_frame;
     start_pitch_frame = start_pitch_frame + N_frame;
     stop_pitch_frame = stop_pitch_frame + N_frame;
-    
+        
     % add our array
     err_sig = [err_sig; temp_err];
     % add to aray
-    restored = [restored; filter(1,temp_coeffs, temp_err)];
+    restored = [restored; filter(1,coeffs, temp_err)];
 
 
     % compute the fft to our unpadded ham signal

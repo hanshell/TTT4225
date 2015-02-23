@@ -3,6 +3,9 @@ function [ classification ] = voiceclassification( audio_segment )
 % Analysis a sound signal segment and determines whether it is voiced or
 % unvoiced based on a set threshold value
 %   
+Fs = 16000;
+a = fir1(8,550/(Fs/2),'low');
+audio_segment = filter(a,1,audio_segment);
 xcorr_audio_segment=xcorr(audio_segment);
 xcorr_medianfiltered=medfilt1(xcorr_audio_segment, 10);
 threshold=0.25;

@@ -5,6 +5,7 @@ function [ gain] = gain_estimation( err_sig )
     for i = 1:length(err_sig);
         power = power + abs(err_sig(i))^2;
     end
+    power = power / length(err_sig);
     gain = sqrt(power);
 
 end

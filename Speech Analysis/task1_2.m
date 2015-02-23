@@ -23,18 +23,13 @@ iter = floor((length(s) - N_pitch) / N_frame) + 1;
 % Set start and stop-points for the frame. Cant start completely at the
 % beginning since we have the window and pitch estimation segment should
 % surround the frame symmetrically.
-start_sig_frame = (N_pitch/2 - N_frame/2) + 1;
-stop_sig_frame = N_pitch/2 + N_frame/2;
+start_sig_frame = (N_pitch/2 - N_ham/2) + 1;
+stop_sig_frame = N_pitch/2 + N_ham/2;
 
 start_pitch_frame = 1;
 stop_pitch_frame = 800;
 
-% To be able to multiply our signal with the window the arrays mst have the
-% same length. Therefor we zero-pad in the front and in the end. ??? When
-% doing this and then multiplying by the window, dont we loose a lot of
-% what is good with a Hamming window? The part of the singnal that is mostly
-% being compressed are just zero-padding.
-padded_sig = zeros(N_ham,1);
+
 
 % Array for the corresponding error-signal. or residual-signal.
 err_sig = [];
@@ -48,38 +43,52 @@ prevPitchPos = start_sig_frame;
 % the pitch-period in number of frames
 pitchPeriod = 0;
 
-synth = [];
+synth = zeros(1,length(s));
+
 for i = 1:iter;
     pitch_frame = s(start_pitch_frame : stop_pitch_frame);
     sig_frame = s(start_sig_frame : stop_sig_frame);
     
-    % insert our signal to the middel of our zero-array
-    padded_sig((N_ham - N_frame)/2 + 1 : (N_ham - N_frame)/2 + N_frame) = sig_frame;
+    
     % Apply the window to our padded signal
-    temp_sig_ham = padded_sig .* hamm;
-    % remove padding and restore the signal to its real size
-    unpadded_sig_ham = temp_sig_ham((N_ham - N_frame)/2 : (N_ham - N_frame)/2 + N_frame);
+    temp_sig_ham = sig_frame .* hamm;
+    pitch_ham = pitch_frame.*hamming(N_pitch);
     % coefficcients from the little frame of signal
-    temp_coeffs = AR_coeffs(unpadded_sig_ham, Fs);
+    temp_coeffs = AR_coeffs(temp_sig_ham, Fs);
+    
     % error/residual-signal for the litte frame of signal
-    temp_err = filter(temp_coeffs,1,unpadded_sig_ham);
+    temp_err = filter(temp_coeffs,1,temp_sig_ham);
 
     gain = gain_estimation(temp_err);    
    
     % check whether our signal is voiced or unvoiced
-    if voiceclassification(pitch_frame) == 1;
-        pitchPeriod = pitchperiod_detection(pitch_frame);
+    if voiceclassification(pitch_ham) == 1;
+        pitchPeriod = pitchperiod_detection(pitch_ham);
         [pitches(start_sig_frame : stop_sig_frame), prevPitchPos] = addPitch(prevVoiced, prevPitchPos, pitchPeriod, start_sig_frame, stop_sig_frame);
         pitches(start_sig_frame : stop_sig_frame) = pitches(start_sig_frame : stop_sig_frame)*gain;
         prevVoiced = 1;
-        ctr1 = ctr1 + 1;
+        
     else
         prevVoiced = 0;
         pitches(start_sig_frame : stop_sig_frame) = randn(1, length(sig_frame))*gain*0.1;
-        ctr2 = ctr2 + 1;
+        
     end
     
-    synth = [synth, filter(1, temp_coeffs, pitches(start_sig_frame : stop_sig_frame))];
+    a = fir1(8,1000/8000,'low');
+    
+    pitches(start_sig_frame : stop_sig_frame) = filter(a,1,pitches(start_sig_frame : stop_sig_frame));
+    
+    temp_synth = filter(1, temp_coeffs, pitches(start_sig_frame : stop_sig_frame));
+    if i ~= 1;
+        synth(start_sig_frame : (stop_sig_frame - N_frame)) = synth(start_sig_frame : stop_sig_frame - N_frame) + temp_synth(1 : (stop_sig_frame - N_frame) - start_sig_frame+1);
+        synth(stop_sig_frame - N_frame + 1 : stop_sig_frame) = temp_synth((stop_sig_frame - N_frame) - start_sig_frame+2 : end); 
+    else
+        synth(start_sig_frame : stop_sig_frame) = temp_synth;
+    end
+    
+    
+    
+    
     
     
     % change where to start and stop the frame for the next iteration

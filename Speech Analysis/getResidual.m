@@ -1,13 +1,9 @@
-function [ res ] = getResidual(  )
+function [ res ] = getResidual( s, n_frame, n_step)
 %getResidual returns the residual signal
 %   reads an audiofile and does LP-analysis on it. Inverse-filter the
 %   signals to get the residual signal.
-    filename = 'files/original.wav';
-    [s, Fs] = audioread(filename);
 
     % Some constants
-    n_frame = 480; % lenght of frame we multiply with our hamming window
-    n_step = 320; % how far we each step is
     n_sig = length(s);
     n_iter = ceil((n_sig - n_frame) / n_step) + 1; 
     padding = zeros((n_frame + n_step * n_iter -1) - n_sig - 1 ,1); % the padding we need to fill the n_iter'th signal

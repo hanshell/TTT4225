@@ -13,25 +13,32 @@ n_sig = length(s); % length of the signal
 res = zeros(n_sig, 1); 
 
 for i = 1 : n_iter;
-    frame = getFrame(i, s, n_frame, n_step);
+    frame = getFrame(i, s, n_frame, n_step); % returns the ith part of the sound signal
     frame_ham = frame .* hamming(n_frame);
     
-    coeffs = lpc(frame_ham, 14);
+    coeffs = lpc(frame_ham, 14); % Find the short-time coefficients for the ith part of the signal.
     
-    frame_residual = filter(coeffs, 1, frame_ham);
+    frame_residual = filter(coeffs, 1, frame_ham); % filter the ith signal, producing the ith residual signal
 
+    
     if i == 1;
-        res(1 : n_frame) = frame_residual;
+        res(1 : n_frame) = frame_residual; % first iteration we can add everything to the res signal
         
     else
+        % en all but the first iteration we first add the previous signal and the current signal in the overlapping area.
+        % after that we add the rest of the signal
         res( ((i-1)*n_step) + 1 : (n_frame + (i-2)*n_step) ) = res( ((i-1)*n_step) + 1 : (n_frame + (i-2)*n_step) ) + frame_residual(1: (n_frame - n_step));
         res( (n_frame + (i-2)*n_step) +1 : i*n_step+(n_frame - n_step) ) = frame_residual(n_frame - n_step + 1 : end);
     end
-    
-    
+end
 
 
-%res = res(1: end - length(padding));
+res = res(1: end - length(padding)); % remove padding from residual signal
+
+s = getResidual();
+
+
+
 
 residual_decimated = decimate(res(1 : n_frame), 4); % 1/R times
 plot(residual_decimated)
@@ -66,5 +73,4 @@ rec_res_estimate = filter(b,1,recificated_residual);
 [H,w] = freqz(rec_res_estimate);
 %plot(w/pi,20*log10(abs(H)))
 
-end
 

@@ -4,8 +4,8 @@ filename = 'files/original.wav';
 % Some constants
 n_frame = 480; % lenght of frame we multiply with our hamming window
 n_step = 320; % how far we each step is
-n_iter = ceil((n_sig - n_frame) / n_step) + 1; 
 n_sig = length(s);
+n_iter = ceil((n_sig - n_frame) / n_step) + 1; 
 padding = zeros((n_frame + n_step * n_iter -1) - n_sig - 1 ,1); % the padding we need to fill the n_iter'th signal
 s = [s ; padding];
 n_sig = length(s); % length of the signal
@@ -34,7 +34,7 @@ for i = 1 : n_iter;
 %res = res(1: end - length(padding));
 
 residual_decimated = decimate(res(1 : n_frame), 4); % 1/R times
-
+plot(residual_decimated)
 residual_interpolated = upsample(residual_decimated, 4);
 % [H,w] = freqz(residual_interpolated);
 aA = fir1(10, 2000/(Fs/2), 'low'); % gives a filter that has cutoff freq 0.25
@@ -58,8 +58,8 @@ aA = [1 0];        % Desired amplitudes
 dev = [(10^(rp/20)-1)/(10^(rp/20)+1)  10^(-rs/20)];
 [n,fo,ao,w] = firpmord(f,aA,dev,fs);
 b = firpm(n,fo,ao,w);
-freqz(b,1,1024,fs)
-title('Lowpass Filter Designed to Specifications')
+% freqz(b,1,1024,fs)
+% title('Lowpass Filter Designed to Specifications')
 %B = firpmord();
 
 rec_res_estimate = filter(b,1,recificated_residual);

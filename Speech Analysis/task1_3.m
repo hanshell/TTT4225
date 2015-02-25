@@ -29,6 +29,42 @@ for i = 1 : n_iter;
     end
     
     
+
+
+%res = res(1: end - length(padding));
+
+residual_decimated = decimate(res(1 : n_frame), 4); % 1/R times
+
+residual_interpolated = upsample(residual_decimated, 4);
+% [H,w] = freqz(residual_interpolated);
+aA = fir1(10, 2000/(Fs/2), 'low'); % gives a filter that has cutoff freq 0.25
+
+residual_interpolated_low = filter(aA,1,residual_interpolated);
+% [HH,ww] = freqz(residual_interpolated_low);
+% figure
+% subplot(2,1,1)
+% plot(w/pi,abs(H))
+% subplot(2,1,2)
+% plot(ww/pi,abs(HH))
+
+recificated_residual = abs(residual_interpolated_low);
+
+[H,w] = freqz(recificated_residual);
+rp = 3;           % Passband ripple
+rs = 40;          % Stopband ripple
+fs = 16000;        % Sampling frequency
+f = [5000 6000];    % Cutoff frequencies
+aA = [1 0];        % Desired amplitudes
+dev = [(10^(rp/20)-1)/(10^(rp/20)+1)  10^(-rs/20)];
+[n,fo,ao,w] = firpmord(f,aA,dev,fs);
+b = firpm(n,fo,ao,w);
+freqz(b,1,1024,fs)
+title('Lowpass Filter Designed to Specifications')
+%B = firpmord();
+
+rec_res_estimate = filter(b,1,recificated_residual);
+[H,w] = freqz(rec_res_estimate);
+%plot(w/pi,20*log10(abs(H)))
+
 end
 
-res = res(1: end - length(padding));

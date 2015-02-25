@@ -1,5 +1,5 @@
-filename = 'files/original.wav';
-Fs = 16000;
+filename = 'files/baba1.wav';
+
 % 16000 * (20*10^-3)
 N_frame = 320;
 % 16000 * (30*10^-3)
@@ -14,8 +14,7 @@ hamm = hamming( N_ham );
 % Read audiofile. y is the data, Fs is the sampling rate
 [ s, Fs ] = audioread( filename );
 
-%soundsc( s(1:end,1), Fs )
-O = s(14000:17400);
+
 
 % Number of total iterations. The 1 comes from the first placing of the
 % pitch window.
@@ -24,15 +23,13 @@ iter = floor((length(s) - N_pitch) / N_frame) + 1;
 % Set start and stop-points for the frame. Cant start completely at the
 % beginning since we have the window and pitch estimation segment should
 % surround the frame symmetrically.
-start = N_pitch/2 - N_frame/2;
-stop = start + N_frame;
+start_sig_frame = (N_pitch/2 - N_ham/2) + 1;
+stop_sig_frame = N_pitch/2 + N_ham/2;
 
-% To be able to multiply our signal with the window the arrays mst have the
-% same length. Therefor we zero-pad in the front and in the end. ??? When
-% doing this and then multiplying by the window, dont we loose a lot of
-% what is good with a Hamming window? The part of the singnal that is mostly
-% being compressed are just zero-padding.
-padded_sig = zeros(N_ham,1);
+start_pitch_frame = 1;
+stop_pitch_frame = 800;
+
+
 
 % Array for the corresponding error-signal. or residual-signal.
 err_sig = [];
@@ -42,48 +39,77 @@ restored = [];
 pitches = zeros(1, length(s));
 % save info about the previous signal
 prevVoiced = 0;
-prevPitchPos = start;
+prevPitchPos = start_sig_frame;
 % the pitch-period in number of frames
 pitchPeriod = 0;
+
+synth = zeros(1,length(s));
+
 for i = 1:iter;
+    pitch_frame = s(start_pitch_frame : stop_pitch_frame);
+    sig_frame = s(start_sig_frame : stop_sig_frame);
     
-    temp_sig = s(start : stop);
-    % insert our signal to the middel of our zero-array
-    padded_sig((N_ham - N_frame)/2 : (N_ham - N_frame)/2 + N_frame) = temp_sig;
+    % Apply the window to our padded signal
+    sig_ham = sig_frame .* hamm;
+    pitch_ham = pitch_frame.*hamming(N_pitch);
     % coefficcients from the little frame of signal
-    temp_coeffs = AR_coeffs(temp_sig, Fs);
+    coeffs = lpc(sig_ham, 14);
+    
     % error/residual-signal for the litte frame of signal
-    temp_err = filter(temp_coeffs,1,temp_sig);
-    % change where to start and stop the frame for the next iteration
-    if voiceclassification(temp_sig) == 1;
-        pitches(start:stop) = addPitch(prevVoiced, prevPitchPos, pitchPeriod, start, stop);
+    temp_err = filter(coeffs,1,sig_ham);
+    
+    %figure; subplot(2,1,1);plot(temp_sig_ham);subplot(2,1,2);plot(temp_err);
+
+    gain = gain_estimation(temp_err);    
+   
+    % check whether our signal is voiced or unvoiced
+    if voiceclassification(pitch_ham) == 1;
+        pitchPeriod = pitchperiod_detection(pitch_ham);
+        [pitches(start_sig_frame : stop_sig_frame), prevPitchPos] = addPitch(prevVoiced, prevPitchPos, pitchPeriod, start_sig_frame, stop_sig_frame);
+        pitches(start_sig_frame : stop_sig_frame) = pitches(start_sig_frame : stop_sig_frame)*gain;
+        prevVoiced = 1;
+        
+    else
+        prevVoiced = 0;
+        pitches(start_sig_frame : stop_sig_frame) = randn(1, length(sig_frame))*gain*0.1;
+        
     end
-    start = start + N_frame;
-    stop = start + N_frame;
+    
+    a = fir1(8,1000/(Fs/2),'low');
+    
+    pitches(start_sig_frame : stop_sig_frame) = filter(a,1,pitches(start_sig_frame : stop_sig_frame));
+
+    temp_synth = filter(1, coeffs, pitches(start_sig_frame : stop_sig_frame));
+    if i ~= 1;
+        synth(start_sig_frame : (stop_sig_frame - N_frame)) = synth(start_sig_frame : stop_sig_frame - N_frame) + temp_synth(1 : (stop_sig_frame - N_frame) - start_sig_frame+1);
+        synth(stop_sig_frame - N_frame + 1 : stop_sig_frame) = temp_synth((stop_sig_frame - N_frame) - start_sig_frame+2 : end); 
+    else
+        synth(start_sig_frame : stop_sig_frame) = temp_synth;
+    end
+    
+    
+    
+    
+    
+    
+    % change where to start and stop the frame for the next iteration
+    start_sig_frame = start_sig_frame + N_frame;
+    stop_sig_frame = stop_sig_frame + N_frame;
+    start_pitch_frame = start_pitch_frame + N_frame;
+    stop_pitch_frame = stop_pitch_frame + N_frame;
+        
     % add our array
     err_sig = [err_sig; temp_err];
     % add to aray
-    restored = [restored; filter(1,temp_coeffs, temp_err)];
-    % Apply the window to our padded signal
-    temp_sig_ham = padded_sig .* hamm;
-    % remove padding and restore the signal to its real size
-    unpadded_sig_ham = temp_sig_ham((N_ham - N_frame)/2 : (N_ham - N_frame)/2 + N_frame);
+    restored = [restored; filter(1,coeffs, temp_err)];
+
+
     % compute the fft to our unpadded ham signal
     %unpadded_sig_ham_fft = fft(unpadded_sig_ham_fft); 
     
-  
-    
-    % have to use logarithmic scale in order to get funcitons that are easy
-    % to extract info from
-%     figure; hold on;
-%     subplot(2,1,1)
-%     plot(20*log10(abs(unpadded_sig_ham_fft)))
-%     subplot(2,1,2)
-%     plot(20*log10(abs(fft(temp_sig))))
-%     waitforbuttonpress
     
     
-    gain = gain_estimation(temp_err);
+    %waitforbuttonpress
 end
 
 

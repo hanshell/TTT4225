@@ -12,11 +12,15 @@ n_sig = length(s); % length of the signal
 
 res = zeros(n_sig, 1); 
 
+all_coeffs=zeros(n_iter, 15);
+
 for i = 1 : n_iter;
     frame = getFrame(i, s, n_frame, n_step);
     frame_ham = frame .* hamming(n_frame);
     
     coeffs = lpc(frame_ham, 14);
+    
+    all_coeffs(i, :)=coeffs;
     
     frame_residual = filter(coeffs, 1, frame_ham);
 

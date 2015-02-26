@@ -1,4 +1,4 @@
-function [ interpolated_signal ] = interpolate_signal_by_frame( signal, interpolation_value )
+function [ interpolated_signal, total_signal ] = interpolate_signal_by_frame( signal, interpolation_value )
 %UNTITLED3 Summary of this function goes here
 %   Interpolates a 2D-signal frame-by-frame by a given interpolation value
 
@@ -20,11 +20,6 @@ for i=1:length(signal);
         total_signal=[total_signal ; signal_interpolated(i, j)];
     end
 end
-%total_signal
-size(total_signal)
-size(signal_interpolated)
-
-soundsc(total_signal, 16000);
 
 
 interpolated_signal=signal_interpolated;

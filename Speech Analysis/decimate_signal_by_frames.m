@@ -1,4 +1,4 @@
-function [ decimated_signal ] = decimate_signal_by_frames( signal, frame_length, decimation_factor )
+function [ decimated_signal, total_signal ] = decimate_signal_by_frames( signal, frame_length, decimation_factor )
 %UNTITLED Summary of this function goes here
 %   Function returns each decimated frame as a vector in a 2d-array
 

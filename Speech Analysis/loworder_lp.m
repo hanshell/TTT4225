@@ -9,6 +9,8 @@ for i=1:length(rectified_signal(:, 1));
     temp_frame=rectified_signal(i, :);
     temp_coeff=lpc(temp_frame, 4);
     
+    temp_coeff
+    
     temp_lpfiltered=filter(temp_coeff, 1, temp_frame);
     
     signal_lowlpfiltered(i, :)=temp_lpfiltered;

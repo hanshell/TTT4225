@@ -6,7 +6,6 @@
 //but i have no idea how this number is being reached
 void sndfileToFloat(SNDFILE *infile, int channels, float *s)
 {
-  printf("test");
   //because i think we only use mono files the channels var will always be 1
   float buf [channels * BLOCK_SIZE];
   int k, m, readcount;

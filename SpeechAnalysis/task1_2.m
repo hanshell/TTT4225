@@ -1,4 +1,4 @@
-filename = 'files/baba1.wav';
+filename = 'files/original.wav';
 
 % 16000 * (20*10^-3)
 N_frame = 320;

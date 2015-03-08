@@ -6,7 +6,6 @@
 #include "common.h"
 #include "sndfile-to-float.h"
 
-#define BLOCK_SIZE 512
 
 int main(int argc, char **argv) 
 {
@@ -45,15 +44,9 @@ int main(int argc, char **argv)
 
   sndfileToFloat(infile, sfinfo.channels, &s[0]);
 
-  int j;
-  for (j = 0; j < sfinfo.frames; j++)
-  {
-    printf("%f\t%d\n", s[j], j);
-  }
 
-
-  sf_close(infile);
-  return 0;
+sf_close(infile);
+return 0;
 }
 
 

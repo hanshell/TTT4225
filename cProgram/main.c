@@ -6,12 +6,17 @@
 #include "common.h"
 #include "sndfile-to-float.h"
 #include "get-frame.h"
+#include "get-length.h"
 
 
 int main(int argc, char **argv) 
 {
     SNDFILE *infile;
     SF_INFO sfinfo;
+    int n_frame = 480;
+    int n_step = 320;
+    int n_tot_sig;
+    int n_iter;
 
     /* Allocate and initialize memory, and open the input file  
        memset(void *str, int c, size_t n) 
@@ -30,7 +35,8 @@ int main(int argc, char **argv)
     { printf ("Input file '%s' not mono. Will mix to single channel.\n", argv [1]) ;
     } ;
 
-    float s[(int) sfinfo.frames];
+    n_tot_sig = getLength(sfinfo.frames, n_frame, n_step, &n_iter); //returns length needed with zero-padding in the end
+    float s[(int) sfinfo.frames+n_tot_sig];
 
     printf("-------\n");
     printf("Sound file %s is loaded into memory\n", argv[1]);
@@ -45,11 +51,8 @@ int main(int argc, char **argv)
     /* Works fine */
     int framenr = 0;
     float *segment = getFrame(framenr, &s[0], 480, 320);
-    //int k;
-    //for (k = 0; k < 480; k++)
-    //{
-    //    printf("TEST: %d\t\t%f\n", (framenr*480+k),segment[k]);
-    //}
+
+
 
     free(segment);
     sf_close(infile);

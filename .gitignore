@@ -1,4 +1,5 @@
 *.m~
+.vimrc
 # Swap files created by VIM
 *.swp
 # Object files from compilation

@@ -8,7 +8,7 @@ float *getFrame(int i, float *infile_float, int n_frame, int n_step)
 
     if (i == 0)
     {
-        printf("if");
+        printf("if\n");
         for (j == 0; j < n_frame; j++)
         {
             segment[j] = infile_float[j];
@@ -18,10 +18,11 @@ float *getFrame(int i, float *infile_float, int n_frame, int n_step)
     }
     else
     {
-        printf("else");
+        printf("else\n");
         for (j == 0; j < n_frame; j++)
         {
-           segment[j] = infile_float[ i * n_step +j ];
+           segment[j] = infile_float[ i * n_frame + j ];
+               //n_step +j ];
         }
     }
     return &segment[0];

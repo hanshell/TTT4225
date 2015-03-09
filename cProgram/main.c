@@ -43,11 +43,12 @@ int main(int argc, char **argv)
     sndfileToFloat(infile, sfinfo.channels, &s[0]);
 
     /* Works fine */
-    float *segment = getFrame(1, &s[0], 480, 320);
+    int framenr = 1;
+    float *segment = getFrame(framenr, &s[0], 480, 320);
     int k;
-    for (k = 0; k < 20; k++)
+    for (k = 0; k < 480; k++)
     {
-        printf("TEST: %d\t%f\n", (480+k),segment[k]);
+        printf("TEST: %d\t\t%f\n", (framenr*480+k),segment[k]);
     }
 
     free(segment);

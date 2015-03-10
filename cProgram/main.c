@@ -17,6 +17,8 @@ int main(int argc, char **argv)
     int n_step = 320;
     int n_tot_sig;
     int n_iter;
+    int i;
+    int j;
 
     /* Allocate and initialize memory, and open the input file  
        memset(void *str, int c, size_t n) 
@@ -38,6 +40,13 @@ int main(int argc, char **argv)
     n_tot_sig = getLength(sfinfo.frames, n_frame, n_step, &n_iter); //returns length needed with zero-padding in the end
     float s[(int) sfinfo.frames+n_tot_sig];
 
+    /* Elements containtan random junk
+     * if not initialized to 0 */
+    for (i = 0; i < (int) sfinfo.frames+n_tot_sig; i++)
+    {
+        s[i] = 0.0;
+    }
+
     printf("-------\n");
     printf("Sound file %s is loaded into memory\n", argv[1]);
     printf("-------\n");
@@ -45,16 +54,21 @@ int main(int argc, char **argv)
     printf("Samplerate: %d\n", sfinfo.samplerate);
     printf("Frames: %d\n", (int)sfinfo.frames);
     printf("Channels: %d\n", sfinfo.channels);
-
+    printf("---------\n");
+    
     sndfileToFloat(infile, sfinfo.channels, &s[0]);
 
     /* Works fine */
-    int framenr = 0;
-    float *segment = getFrame(framenr, &s[0], 480, 320);
+    //int j;
+    int framenr;
+    for (framenr = 0; framenr < n_iter; framenr++)
+    {
+        float *segment = getFrame(framenr, &s[0], 480, 320);
+        //printf("%d\t%f\n", framenr, segment[0]);
 
+        free(segment);
+    }
 
-
-    free(segment);
     sf_close(infile);
     return 0;
 }

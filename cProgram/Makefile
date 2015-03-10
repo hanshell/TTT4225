@@ -11,12 +11,12 @@ CFLAGS= -Wall -I. -I/opt/local/include
 LFLAGS= -Wall -L/opt/local/lib
 LIBS = -lm -lsndfile
 
-DEPS = common.h sndfile-to-float.h get-frame.h get-length.h
+DEPS = common.h sndfile-to-float.h get-segmentframe.h get-length.h
 #headerfiles which have been made by  
 
 
-OBJS = main.o common.o sndfile-to-float.o get-frame.o get-length.o
-SRCS = main.c common.c sndfile-to-float.c get-frame.c get-length.c
+OBJS = main.o common.o sndfile-to-float.o get-segmentframe.o get-length.o
+SRCS = main.c common.c sndfile-to-float.c get-segmentframe.c get-length.c
 
 
 all: Main

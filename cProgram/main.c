@@ -5,7 +5,7 @@
 
 #include "common.h"
 #include "sndfile-to-float.h"
-#include "get-frame.h"
+#include "get-segmentframe.h"
 #include "get-length.h"
 
 
@@ -13,18 +13,23 @@ int main(int argc, char **argv)
 {
     SNDFILE *infile;
     SF_INFO sfinfo;
-    int n_frame = 480;
+    int n_pitch = 800; // number of values per frame for pitch estimate
+    int n_frame = 480; // number of values per frame for LPC analysis 
     int n_step = 320;
     int n_tot_sig;
-    int n_iter;
+    //int n_frame_iter;
+    int n_pitch_iter;
+    int n_pad;
     int i;
-    int j;
+    int offset;
+    //int j;
 
     /* Allocate and initialize memory, and open the input file  
        memset(void *str, int c, size_t n) 
        str is pointer to the block of meomory to fill
        c value to be set. 
        n is the number of bytes to be set to the value*/
+
     memset (&sfinfo, 0, sizeof (sfinfo)) ;
     // argv [1] is first parameter given to output func
     if ((infile = sf_open (argv [1], SFM_READ, &sfinfo)) == NULL)
@@ -37,12 +42,14 @@ int main(int argc, char **argv)
     { printf ("Input file '%s' not mono. Will mix to single channel.\n", argv [1]) ;
     } ;
 
-    n_tot_sig = getLength(sfinfo.frames, n_frame, n_step, &n_iter); //returns length needed with zero-padding in the end
-    float s[(int) sfinfo.frames+n_tot_sig];
+    
+    n_pad = getLength(sfinfo.frames, n_pitch, n_step, &n_pitch_iter); //returns needed padding
+    n_tot_sig = (int) sfinfo.frames+n_pad; // length of signal with zero padding
+    float s[(int) sfinfo.frames+n_pad]; // initialize floatingpoint signal array
 
     /* Elements containtan random junk
      * if not initialized to 0 */
-    for (i = 0; i < (int) sfinfo.frames+n_tot_sig; i++)
+    for (i = 0; i < n_tot_sig; i++)
     {
         s[i] = 0.0;
     }
@@ -56,17 +63,20 @@ int main(int argc, char **argv)
     printf("Channels: %d\n", sfinfo.channels);
     printf("---------\n");
     
-    sndfileToFloat(infile, sfinfo.channels, &s[0]);
+    sndfileToFloat(infile, sfinfo.channels, &s[0]); // Sending in memloc so the func can change the arrays meomory
+
 
     /* Works fine */
-    //int j;
     int framenr;
-    for (framenr = 0; framenr < n_iter; framenr++)
+    offset = (n_pitch/2) - (n_frame/2); // Add a offset for the frame since it should be symmetric surrounded by the pitchframe
+    for (framenr = 0; framenr < n_pitch_iter; framenr++)
     {
-        float *segment = getFrame(framenr, &s[0], 480, 320);
-        //printf("%d\t%f\n", framenr, segment[0]);
 
-        free(segment);
+        float *pitch_segment = getSegmentFrame(framenr, &s[0], n_pitch, n_step, 0); // Pitch segment. Length is n_pitch
+        float *sig_segment = getSegmentFrame(framenr, &s[0], n_frame, n_step, offset); // Sig segment. Length is n_frame
+
+        free(pitch_segment); // free momey to avoid memlacage. Have to do in in foor loop
+        free(sig_segment); // free momey to avoid memlacage. Have to do in in foor loop
     }
 
     sf_close(infile);

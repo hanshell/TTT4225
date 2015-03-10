@@ -11,12 +11,12 @@ CFLAGS= -Wall -I. -I/opt/local/include
 LFLAGS= -Wall -L/opt/local/lib
 LIBS = -lm -lsndfile
 
-DEPS = common.h sndfile-to-float.h
+DEPS = common.h sndfile-to-float.h hamming.h autocorr_lpc.h
 #headerfiles which have been made by  
 
 
-OBJS = main.o common.o sndfile-to-float.o
-SRCS = main.c common.c sndfile-to-float.c
+OBJS = main.o common.o sndfile-to-float.o hamming.o autocorr_lpc.o
+SRCS = main.c common.c sndfile-to-float.c hamming.c autocorr_lpc.c
 
 
 all: Main

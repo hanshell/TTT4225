@@ -7,6 +7,7 @@
 #include "sndfile-to-float.h"
 #include "get-segmentframe.h"
 #include "get-length.h"
+#include "gain-estimation.h"
 
 
 int main(int argc, char **argv) 
@@ -22,6 +23,7 @@ int main(int argc, char **argv)
     int n_pad;
     int i;
     int offset;
+    float gain;
     //int j;
 
     /* Allocate and initialize memory, and open the input file  
@@ -66,6 +68,7 @@ int main(int argc, char **argv)
     sndfileToFloat(infile, sfinfo.channels, &s[0]); // Sending in memloc so the func can change the arrays meomory
 
 
+
     /* Works fine */
     int framenr;
     offset = (n_pitch/2) - (n_frame/2); // Add a offset for the frame since it should be symmetric surrounded by the pitchframe
@@ -74,6 +77,9 @@ int main(int argc, char **argv)
 
         float *pitch_segment = getSegmentFrame(framenr, &s[0], n_pitch, n_step, 0); // Pitch segment. Length is n_pitch
         float *sig_segment = getSegmentFrame(framenr, &s[0], n_frame, n_step, offset); // Sig segment. Length is n_frame
+        
+        gain = gainEstimation(&sig_segment[0], n_frame);
+        printf("%f\n",gain);
 
         free(pitch_segment); // free momey to avoid memlacage. Have to do in in foor loop
         free(sig_segment); // free momey to avoid memlacage. Have to do in in foor loop

@@ -8,6 +8,7 @@
 #include "get-segmentframe.h"
 #include "get-length.h"
 #include "gain-estimation.h"
+#include "hamming.h"
 
 
 int main(int argc, char **argv) 
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
     { printf ("Input file '%s' not mono. Will mix to single channel.\n", argv [1]) ;
     } ;
 
-    
+
     n_pad = getLength(sfinfo.frames, n_pitch, n_step, &n_pitch_iter); //returns needed padding
     n_tot_sig = (int) sfinfo.frames+n_pad; // length of signal with zero padding
     float s[(int) sfinfo.frames+n_pad]; // initialize floatingpoint signal array
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
     printf("Frames: %d\n", (int)sfinfo.frames);
     printf("Channels: %d\n", sfinfo.channels);
     printf("---------\n");
-    
+
     sndfileToFloat(infile, sfinfo.channels, &s[0]); // Sending in memloc so the func can change the arrays meomory
 
 
@@ -77,7 +78,14 @@ int main(int argc, char **argv)
 
         float *pitch_segment = getSegmentFrame(framenr, &s[0], n_pitch, n_step, 0); // Pitch segment. Length is n_pitch
         float *sig_segment = getSegmentFrame(framenr, &s[0], n_frame, n_step, offset); // Sig segment. Length is n_frame
-        
+
+        float *pitch_ham = hamming_window(pitch_segment, n_pitch);
+        float *sig_ham = hamming_window(sig_segment, n_frame);
+        int k;
+        for (k = 0; k<480;k++)
+        {
+            printf("%f\n", sig_ham[k]);
+        }
         gain = gainEstimation(&sig_segment[0], n_frame);
         printf("%f\n",gain);
 

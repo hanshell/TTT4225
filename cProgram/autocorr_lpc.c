@@ -28,7 +28,7 @@ float *levinson_durbin_recursion(const float frame[], int order, int frame_lengt
 
     float E = xcorr_frame[0]; //Energy = autocorrelation in point n=0
     printf("%f\n", E);
-    float a[order+1];
+    float *a=calloc(order+1, sizeof(float));
     a[0] = 1;
     float b[order+1]; //={0};
         

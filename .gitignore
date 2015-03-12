@@ -1,6 +1,18 @@
 *.m~
+.vimrc
+# Swap files created by VIM
 *.swp
+# Object files from compilation
 *.o
+# The executable file
+Main
+# Debugging dump
+core
+# Temp files
+*.~
+
+
+
 
 Main
 # Object files

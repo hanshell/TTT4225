@@ -73,22 +73,33 @@ int main(int argc, char **argv)
     /* Works fine */
     int framenr;
     offset = (n_pitch/2) - (n_frame/2); // Add a offset for the frame since it should be symmetric surrounded by the pitchframe
-    for (framenr = 0; framenr < n_pitch_iter; framenr++)
+    for (framenr = 0; framenr < n_pitch_iter; framenr++) // Loop oper every segment and to stuff
     {
 
+        // Get segments for pitchestimation and LPC analysis
         float *pitch_segment = getSegmentFrame(framenr, &s[0], n_pitch, n_step, 0); // Pitch segment. Length is n_pitch
         float *sig_segment = getSegmentFrame(framenr, &s[0], n_frame, n_step, offset); // Sig segment. Length is n_frame
 
+        // Apply hamming window to signal 
         float *pitch_ham = hamming_window(pitch_segment, n_pitch);
         float *sig_ham = hamming_window(sig_segment, n_frame);
-        int k;
-        for (k = 0; k<480;k++)
-        {
-            printf("%f\n", sig_ham[k]);
-        }
-        gain = gainEstimation(&sig_segment[0], n_frame);
-        printf("%f\n",gain);
+        
+        // Calculate gain
+        gain = gainEstimation(&sig_ham[0], n_frame);
 
+
+        //int k;
+        //for (k = 0; k<480;k++)
+        //{
+        //    printf("%f\n", sig_ham[k]);
+        //}
+        
+
+
+
+
+        free(pitch_ham);
+        free(sig_ham);
         free(pitch_segment); // free momey to avoid memlacage. Have to do in in foor loop
         free(sig_segment); // free momey to avoid memlacage. Have to do in in foor loop
     }

@@ -38,3 +38,5 @@ Main
 build/
 dist/
 nbproject/
+
+.vimrc

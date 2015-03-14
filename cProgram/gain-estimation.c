@@ -16,7 +16,7 @@ float gainEstimation(float *signal, int n_signal)
     {
 
        power = power + pow(signal[i], 2);
-       printf("%f\n", power);
+       //printf("%f\n", power);
     }
     power = power / n_signal;
     

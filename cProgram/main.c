@@ -8,6 +8,7 @@
 #include "get-segmentframe.h"
 #include "get-length.h"
 #include "gain-estimation.h"
+#include "hamming.h"
 
 
 int main(int argc, char **argv) 
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
     { printf ("Input file '%s' not mono. Will mix to single channel.\n", argv [1]) ;
     } ;
 
-    
+
     n_pad = getLength(sfinfo.frames, n_pitch, n_step, &n_pitch_iter); //returns needed padding
     n_tot_sig = (int) sfinfo.frames+n_pad; // length of signal with zero padding
     float s[(int) sfinfo.frames+n_pad]; // initialize floatingpoint signal array
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
     printf("Frames: %d\n", (int)sfinfo.frames);
     printf("Channels: %d\n", sfinfo.channels);
     printf("---------\n");
-    
+
     sndfileToFloat(infile, sfinfo.channels, &s[0]); // Sending in memloc so the func can change the arrays meomory
 
 
@@ -72,15 +73,33 @@ int main(int argc, char **argv)
     /* Works fine */
     int framenr;
     offset = (n_pitch/2) - (n_frame/2); // Add a offset for the frame since it should be symmetric surrounded by the pitchframe
-    for (framenr = 0; framenr < n_pitch_iter; framenr++)
+    for (framenr = 0; framenr < n_pitch_iter; framenr++) // Loop oper every segment and to stuff
     {
 
+        // Get segments for pitchestimation and LPC analysis
         float *pitch_segment = getSegmentFrame(framenr, &s[0], n_pitch, n_step, 0); // Pitch segment. Length is n_pitch
         float *sig_segment = getSegmentFrame(framenr, &s[0], n_frame, n_step, offset); // Sig segment. Length is n_frame
-        
-        gain = gainEstimation(&sig_segment[0], n_frame);
-        printf("%f\n",gain);
 
+        // Apply hamming window to signal 
+        float *pitch_ham = hamming_window(pitch_segment, n_pitch);
+        float *sig_ham = hamming_window(sig_segment, n_frame);
+        
+        // Calculate gain
+        gain = gainEstimation(&sig_ham[0], n_frame);
+
+
+        //int k;
+        //for (k = 0; k<480;k++)
+        //{
+        //    printf("%f\n", sig_ham[k]);
+        //}
+        
+
+
+
+
+        free(pitch_ham);
+        free(sig_ham);
         free(pitch_segment); // free momey to avoid memlacage. Have to do in in foor loop
         free(sig_segment); // free momey to avoid memlacage. Have to do in in foor loop
     }

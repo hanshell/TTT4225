@@ -17,8 +17,8 @@ float *hamming_window(float frame[], int window_length){
         float temp_multiplier=alpha-beta*cos((2*3.14159*i)/(window_length-1));
         windowed_frame[i]=temp_multiplier*frame[i];
     }
-    for(i=0; i<window_length; i++){
-        printf("%f \n", windowed_frame[i]);
-    }
+    //for(i=0; i<window_length; i++){
+    //    printf("%f \n", windowed_frame[i]);
+    //}
     return windowed_frame;
 }

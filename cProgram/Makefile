@@ -11,13 +11,13 @@ CFLAGS= -Wall -I. -I/opt/local/include
 LFLAGS= -Wall -L/opt/local/lib
 LIBS = -lm -lsndfile
 
-DEPS = common.h sndfile-to-float.h hamming.h autocorr_lpc.h get-segmentframe.h get-length.h gain-estimation.h voice_classification.h decimation.h
+DEPS = common.h sndfile-to-float.h hamming.h autocorr_lpc.h get-segmentframe.h get-length.h gain-estimation.h voice_classification.h decimation.h interpolation.h
 
 #headerfiles which have been made by  
 
-OBJS = main.o common.o sndfile-to-float.o hamming.o autocorr_lpc.o get-segmentframe.o get-length.o gain-estimation.o voice_classification.o decimation.o
+OBJS = main.o common.o sndfile-to-float.o hamming.o autocorr_lpc.o get-segmentframe.o get-length.o gain-estimation.o voice_classification.o decimation.o interpolation.o
 
-SRCS = main.c common.c sndfile-to-float.c hamming.c autocorr_lpc.c get-segmentframe.c get-length.c gain-estimation.c voice_classification.c decimation.c
+SRCS = main.c common.c sndfile-to-float.c hamming.c autocorr_lpc.c get-segmentframe.c get-length.c gain-estimation.c voice_classification.c decimation.c interpolation.c
 
 all: Main
 	@echo 'make: Target compiled'

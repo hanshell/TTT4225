@@ -71,7 +71,7 @@ for i = 1:iter;
         
     else
         prevVoiced = 0;
-        pitches(start_sig_frame : stop_sig_frame) = randn(1, length(sig_frame))*gain*0.1;
+        pitches(start_sig_frame : stop_sig_frame) = randn(1, length(sig_frame))*gain;
         
     end
     

@@ -8,6 +8,9 @@
 #include "autocorr_lpc.h"
 #include "voice_classification.h"
 
+/*
+ * Finds amount of zero crossings of the autocorrelation of a frame
+ */
 int find_zero_crossings(const float frame[], int frame_length){
     float *xcorr_frame=autocorrelation(frame, frame_length);    
     int i;
@@ -20,15 +23,20 @@ int find_zero_crossings(const float frame[], int frame_length){
             zero_crossing_count++;
 
         }
-//                    printf("YES\n");
     }
     free(xcorr_frame);
     return zero_crossing_count;
 }
+/*
+ * determines a segment to be voiced or unvoiced based on 
+*/
 int voiced_unvoiced_detection(const float frame[], int frame_length){
+    float *xcorr_frame=autocorrelation(frame, frame_length);
     int zero_crossing_threshold=40; //zero crossing threshold. Unvoiced sounds have high zero crossing rate. Opposite for voiced.
     
-    if(find_zero_crossings(frame, frame_length)<zero_crossing_threshold) return 1;
+    int zero_crossings=find_zero_crossings(xcorr_frame, frame_length);
+    free(xcorr_frame);
+    if(zero_crossings<zero_crossing_threshold) return 1;
     else return 0;
     
 }
@@ -40,7 +48,8 @@ int voiced_unvoiced_detection(const float frame[], int frame_length){
  */
 int pitch_period_length(float frame[], int frame_length){
     float *xcorr_frame=autocorrelation(frame, frame_length);
-    int zerocrossings=find_zero_crossings(xcorr_frame, frame_length); //total number of zero crossings in frame
+    
+    int zerocrossings=find_zero_crossings(frame, frame_length); //total number of zero crossings in frame
     int zero_crossing_distances[zerocrossings]; //Array to contain distance between each zero crossing
     
     int counter=0;

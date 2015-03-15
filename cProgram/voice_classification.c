@@ -12,19 +12,17 @@
  * Finds amount of zero crossings of the autocorrelation of a frame
  */
 int find_zero_crossings(const float frame[], int frame_length){
-    float *xcorr_frame=autocorrelation(frame, frame_length);    
     int i;
     int zero_crossing_count=0;
     for(i=0; i<frame_length-1; i++){
-        float temp_1=xcorr_frame[i];
-        float temp_2=xcorr_frame[i+1];
+        float temp_1=frame[i];
+        float temp_2=frame[i+1];
         
         if(temp_1>0 && temp_2<0 ||temp_1<0 && temp_2>0){
             zero_crossing_count++;
 
         }
     }
-    free(xcorr_frame);
     return zero_crossing_count;
 }
 /*
@@ -35,10 +33,25 @@ int voiced_unvoiced_detection(const float frame[], int frame_length){
     int zero_crossing_threshold=40; //zero crossing threshold. Unvoiced sounds have high zero crossing rate. Opposite for voiced.
     
     int zero_crossings=find_zero_crossings(xcorr_frame, frame_length);
-    free(xcorr_frame);
-    if(zero_crossings<zero_crossing_threshold) return 1;
-    else return 0;
     
+    free(xcorr_frame);
+    
+    if(zero_crossings>zero_crossing_threshold){
+        return 0;
+    }
+    else{
+        int period=pitch_period_length(frame, frame_length);
+        if(period<32 || period>320){
+            return 0;
+        }
+        else{
+            return 1;
+        }
+    }
+    
+/*    if(zero_crossings<zero_crossing_threshold) return 1;
+*    else return 0;
+*/    
 }
 /*
  This function uses zero crossings to find the pitch period by calculating the mean distance
@@ -49,7 +62,7 @@ int voiced_unvoiced_detection(const float frame[], int frame_length){
 int pitch_period_length(float frame[], int frame_length){
     float *xcorr_frame=autocorrelation(frame, frame_length);
     
-    int zerocrossings=find_zero_crossings(frame, frame_length); //total number of zero crossings in frame
+    int zerocrossings=find_zero_crossings(xcorr_frame, frame_length); //total number of zero crossings in frame
     int zero_crossing_distances[zerocrossings]; //Array to contain distance between each zero crossing
     
     int counter=0;

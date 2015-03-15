@@ -35,6 +35,8 @@ int main(int argc, char **argv)
     //float *out_float; // Containing full output signal in float
     float *lpc_coeffs;
     int pitch_period;
+    float *residual_signal;
+
 
     //int *prev_pitch_pos;
     //*prev_pitch_pos = 0;
@@ -82,12 +84,13 @@ int main(int argc, char **argv)
     sndfileToFloat(infile, sfinfo.channels, &s[0]); // Sending in memloc so the func can change the arrays meomory
 
 
+    residual_signal = (float *)calloc(n_tot_sig, sizeof(float));
 
-    n_pitch_iter = 19;
+    //n_pitch_iter = 19;
     /* Works fine */
     int framenr;
     offset = (n_pitch/2) - (n_frame/2); // Add a offset for the frame since it should be symmetric surrounded by the pitchframe
-    for (framenr = 18; framenr < n_pitch_iter; framenr++) // Loop oper every segment and to stuff
+    for (framenr = 0; framenr < n_pitch_iter; framenr++) // Loop oper every segment and to stuff
     {
 
         // Get segments for pitchestimation and LPC analysis
@@ -102,17 +105,7 @@ int main(int argc, char **argv)
         float *sig_ham = hamming_window(sig_segment, n_frame);
         /////////////// TESTED ///////////////
 
-        //for (i = 0; i < n_pitch; i++) {
-        //    printf("%f\n", pitch_ham[i]);
 
-        //}
-
-        float *corr = autocorrelation(pitch_ham, n_pitch);
-        for (i = 0; i < n_pitch; i++) {
-            printf("%f\n", corr[i]);
-
-        }
-        free(corr);
         //get lpc coefficients -> gives almost the same coeffs as matlab
         //All numbers have opposite sign from matlab
         lpc_coeffs = levinson_durbin_recursion(&sig_ham[0], 14, n_frame);
@@ -124,19 +117,23 @@ int main(int argc, char **argv)
 
 
         //residuak_sig = filter(); filter our signal and obtain the residue signal
-        float *residual_signal = filter(&lpc_coeffs[0], 14, n_frame, &sig_ham[0]);
+        float *residual_segment = filter(&lpc_coeffs[0], 14, n_frame, &sig_ham[0]);
         ////////////////// TESTED ///////////////////////
 
 
+ 
+        overlapAdd(&residual_segment[0], &residual_signal[0], framenr, n_frame, n_step);
+
+
+
         // Estimate gain from residual_signal
-        gain = gainEstimation(&residual_signal[0], n_frame);
+        gain = gainEstimation(&residual_segment[0], n_frame);
         //////////////// TESTED ///////////////////////
 
 
         /////////////// TESTED BUT GAVE DIFFERENT FROM MATLAB ///////////////
         if (voiced_unvoiced_detection(pitch_ham, n_pitch) == 1){
             pitch_period = pitch_period_length(pitch_ham, n_pitch);
-            printf("Voiced\t%d\t%d\n",pitch_period, i);
             //    //float *pitch_float = addPitch(pitch_period, prev_voiced, &prev_pitch_pos, i, n_frame);
             //    //overlapAdd(&pitch_float[0], &out_float[0], i, n_frame, n_step); 
             //    //free(pitch_float);
@@ -144,7 +141,6 @@ int main(int argc, char **argv)
             //    printf("%d",prev_voiced);
         }
         else {
-            printf("Unvoiced\n");
             //    //next_pitch_offset = 0;
             //    float *array = randNoise(n_frame);
             //    applyGain(&array[0], gain, n_frame);
@@ -169,6 +165,11 @@ int main(int argc, char **argv)
         free(pitch_segment); // free momey to avoid memlacage. Have to do in in foor loop
         free(sig_segment); // free momey to avoid memlacage. Have to do in in foor loop
     }
+    for (i = 0; i<n_tot_sig; i++) {
+        printf("%f\n", residual_signal[i]);
+    }
+    free(residual_signal);
+
 
     sf_close(infile);
     return 0;

@@ -11,14 +11,14 @@
 /*
  * Finds amount of zero crossings of the autocorrelation of a frame
  */
-int find_zero_crossings(const float frame[], int frame_length){
+int find_zero_crossings(float frame[], int frame_length){
     int i;
     int zero_crossing_count=0;
     for(i=0; i<frame_length-1; i++){
         float temp_1=frame[i];
         float temp_2=frame[i+1];
         
-        if(temp_1>0 && temp_2<0 ||temp_1<0 && temp_2>0){
+        if((temp_1>0 && temp_2<0) ||(temp_1<0 && temp_2>0)){
             zero_crossing_count++;
 
         }
@@ -28,7 +28,7 @@ int find_zero_crossings(const float frame[], int frame_length){
 /*
  * determines a segment to be voiced or unvoiced based on 
 */
-int voiced_unvoiced_detection(const float frame[], int frame_length){
+int voiced_unvoiced_detection(float frame[], int frame_length){
     float *xcorr_frame=autocorrelation(frame, frame_length);
     int zero_crossing_threshold=40; //zero crossing threshold. Unvoiced sounds have high zero crossing rate. Opposite for voiced.
     

@@ -5,8 +5,8 @@
  * Created on March 12, 2015, 7:43 PM
  */
 
-int voiced_unvoiced_detection(const float frame[], int frame_length);
-int find_zero_crossings(const float frame[], int frame_length);
+int voiced_unvoiced_detection(float frame[], int frame_length);
+int find_zero_crossings(float frame[], int frame_length);
 int pitch_period_length(float frame[], int frame_length);
 
 #ifndef VOICE_CLASSIFICATION_H

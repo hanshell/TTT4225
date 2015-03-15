@@ -43,7 +43,7 @@ float *addPitch(int pitch_period, int prev_voiced, int *prev_pitch_pos, int i, i
     else {
         for (j = 0; j < n_frame; j += pitch_period){
             segment[j] = 1; 
-            *prev_pitch_pos = 0;
+            *prev_pitch_pos = i*n_f;
         } 
     } 
 }

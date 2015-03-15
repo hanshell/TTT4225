@@ -11,10 +11,14 @@
 #include "hamming.h"
 #include "Randnoise.h"
 #include "overlapAdd.h"
+#include "voice_classification.h"
+#include "autocorr_lpc.h"
+#include "filter.h"
 
 
 int main(int argc, char **argv) 
 {
+
     SNDFILE *infile;
     SF_INFO sfinfo;
     int n_pitch = 800; // number of values per frame for pitch estimate
@@ -27,10 +31,13 @@ int main(int argc, char **argv)
     int i;
     int offset; // offset to keep centering inside the pitchframe
     float gain; // const to multiply something with
-    int prev_voiced = 0; // if previ segment was voiced or not
-    float *out_float; // Containing full output signal in float
-    int *prev_pitch_pos;
-    *prev_pitch_pos = 0;
+    //int prev_voiced = 0; // if previ segment was voiced or not
+    //float *out_float; // Containing full output signal in float
+    float *lpc_coeffs;
+    int pitch_period;
+
+    //int *prev_pitch_pos;
+    //*prev_pitch_pos = 0;
     //int j;
 
     /* Allocate and initialize memory, and open the input file  
@@ -76,54 +83,86 @@ int main(int argc, char **argv)
 
 
 
+    n_pitch_iter = 19;
     /* Works fine */
     int framenr;
     offset = (n_pitch/2) - (n_frame/2); // Add a offset for the frame since it should be symmetric surrounded by the pitchframe
-    for (framenr = 0; framenr < n_pitch_iter; framenr++) // Loop oper every segment and to stuff
+    for (framenr = 18; framenr < n_pitch_iter; framenr++) // Loop oper every segment and to stuff
     {
 
         // Get segments for pitchestimation and LPC analysis
         float *pitch_segment = getSegmentFrame(framenr, &s[0], n_pitch, n_step, 0); // Pitch segment. Length is n_pitch
         float *sig_segment = getSegmentFrame(framenr, &s[0], n_frame, n_step, offset); // Sig segment. Length is n_frame
+        //////////// TESTED //////////////////
+
+
 
         // Apply hamming window to signal 
         float *pitch_ham = hamming_window(pitch_segment, n_pitch);
         float *sig_ham = hamming_window(sig_segment, n_frame);
+        /////////////// TESTED ///////////////
 
-        // Calculate gain
-        gain = gainEstimation(&sig_ham[0], n_frame);
+        //for (i = 0; i < n_pitch; i++) {
+        //    printf("%f\n", pitch_ham[i]);
 
-        //get lpc coefficients
-        //
+        //}
+
+        float *corr = autocorrelation(pitch_ham, n_pitch);
+        for (i = 0; i < n_pitch; i++) {
+            printf("%f\n", corr[i]);
+
+        }
+        free(corr);
+        //get lpc coefficients -> gives almost the same coeffs as matlab
+        //All numbers have opposite sign from matlab
+        lpc_coeffs = levinson_durbin_recursion(&sig_ham[0], 14, n_frame);
+        for (i = 1; i < 15; i++){
+            lpc_coeffs[i] *= -1;
+        }
+        ////////////////// TESTED //////////////////////
+
+
+
         //residuak_sig = filter(); filter our signal and obtain the residue signal
+        float *residual_signal = filter(&lpc_coeffs[0], 14, n_frame, &sig_ham[0]);
+        ////////////////// TESTED ///////////////////////
 
 
-        if (voiced_unvoiced_detection() == 1){
-            pitch_period = pitch_period_length(&sig_ham[0], n_frame);
-            float *pitch_float = addPitch(pitch_period, prev_voiced, &prev_pitch_pos, i, n_frame);
-            overlapAdd(&pitch_float[0], &out_float[0], i, n_frame, n_step); 
-            free(pitch_float);
-            prev_voiced = 1;
+        // Estimate gain from residual_signal
+        gain = gainEstimation(&residual_signal[0], n_frame);
+        //////////////// TESTED ///////////////////////
+
+
+        /////////////// TESTED BUT GAVE DIFFERENT FROM MATLAB ///////////////
+        if (voiced_unvoiced_detection(pitch_ham, n_pitch) == 1){
+            pitch_period = pitch_period_length(pitch_ham, n_pitch);
+            printf("Voiced\t%d\t%d\n",pitch_period, i);
+            //    //float *pitch_float = addPitch(pitch_period, prev_voiced, &prev_pitch_pos, i, n_frame);
+            //    //overlapAdd(&pitch_float[0], &out_float[0], i, n_frame, n_step); 
+            //    //free(pitch_float);
+            //    prev_voiced = 1;
+            //    printf("%d",prev_voiced);
         }
         else {
-            next_pitch_offset = 0;
-            float *array = randNoise(n_frame);
-            applyGain(&array[0], gain, n_frame);
-            //filter(b_coeffs, a_coeffs, &array[0]);
-            overlapAdd(&array[0], &out_float[0], i, n_frame, n_step);
-            free(array);
-            prev_voiced = 0; 
+            printf("Unvoiced\n");
+            //    //next_pitch_offset = 0;
+            //    float *array = randNoise(n_frame);
+            //    applyGain(&array[0], gain, n_frame);
+            //    //filter(b_coeffs, a_coeffs, &array[0]);
+            //    overlapAdd(&array[0], &out_float[0], i, n_frame, n_step);
+            //    free(array);
+            //    prev_voiced = 0; 
         }
-        //printf("Last in Array: %f\n", array[99]);
-        //free(array);
+        ////printf("Last in Array: %f\n", array[99]);
+        ////free(array);
 
 
-        //int k;
-        //for (k = 0; k<480;k++)
-        //{
-        //    printf("%f\n", sig_ham[k]);
-        //}
-        //
+        ////int k;
+        ////for (k = 0; k<480;k++)
+        ////{
+        ////    printf("%f\n", sig_ham[k]);
+        ////}
+        ////
 
         free(pitch_ham);
         free(sig_ham);

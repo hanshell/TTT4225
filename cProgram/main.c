@@ -19,6 +19,7 @@
 int main(int argc, char **argv) 
 {
 
+
     SNDFILE *infile;
     SF_INFO sfinfo;
     int n_pitch = 800; // number of values per frame for pitch estimate
@@ -33,9 +34,11 @@ int main(int argc, char **argv)
     float gain; // const to multiply something with
     //int prev_voiced = 0; // if previ segment was voiced or not
     //float *out_float; // Containing full output signal in float
+    //int next_position = 0;
     float *lpc_coeffs;
     int pitch_period;
     float *residual_signal;
+    float *exitation_signal;
 
 
     //int *prev_pitch_pos;
@@ -72,24 +75,30 @@ int main(int argc, char **argv)
         s[i] = 0.0;
     }
 
-    printf("-------\n");
-    printf("Sound file %s is loaded into memory\n", argv[1]);
-    printf("-------\n");
-    printf("SFINFO\n");
-    printf("Samplerate: %d\n", sfinfo.samplerate);
-    printf("Frames: %d\n", (int)sfinfo.frames);
-    printf("Channels: %d\n", sfinfo.channels);
-    printf("---------\n");
+    //printf("-------\n");
+    //printf("Sound file %s is loaded into memory\n", argv[1]);
+    //printf("-------\n");
+    //printf("SFINFO\n");
+    //printf("Samplerate: %d\n", sfinfo.samplerate);
+    //printf("Frames: %d\n", (int)sfinfo.frames);
+    //printf("Channels: %d\n", sfinfo.channels);
+    //printf("---------\n");
 
     sndfileToFloat(infile, sfinfo.channels, &s[0]); // Sending in memloc so the func can change the arrays meomory
 
 
     residual_signal = (float *)calloc(n_tot_sig, sizeof(float));
+    exitation_signal = (float *)calloc((int)sfinfo.frames, sizeof(float));
 
-    //n_pitch_iter = 19;
+    n_pitch_iter = 1;
     /* Works fine */
     int framenr;
     offset = (n_pitch/2) - (n_frame/2); // Add a offset for the frame since it should be symmetric surrounded by the pitchframe
+    
+    float *arfiltered_residual = (float *)calloc(98000, sizeof(float));
+
+
+
     for (framenr = 0; framenr < n_pitch_iter; framenr++) // Loop oper every segment and to stuff
     {
 
@@ -117,35 +126,48 @@ int main(int argc, char **argv)
 
 
         //residuak_sig = filter(); filter our signal and obtain the residue signal
-        float *residual_segment = filter(&lpc_coeffs[0], 14, n_frame, &sig_ham[0]);
+        float *residual_segment = MAfilter(&lpc_coeffs[0], 14, n_frame, &sig_ham[0], 1.0);
         ////////////////// TESTED ///////////////////////
-
-
- 
+        // make a complete residue signal
         overlapAdd(&residual_segment[0], &residual_signal[0], framenr, n_frame, n_step);
+        ///////////////// TESTED ////////////////////////
 
 
+        float *arfiltered_segment = ARfilter(&lpc_coeffs[0], 14, n_frame, &residual_segment[0], gain);
+        for (i = 0; i<n_frame; i++) {
+            printf("dss%f\n", arfiltered_segment[i]);
+        }
+        overlapAdd(&arfiltered_segment[0],& arfiltered_residual[0], framenr, n_frame, n_step);
 
         // Estimate gain from residual_signal
         gain = gainEstimation(&residual_segment[0], n_frame);
         //////////////// TESTED ///////////////////////
 
 
+
+
+
         /////////////// TESTED BUT GAVE DIFFERENT FROM MATLAB ///////////////
         if (voiced_unvoiced_detection(pitch_ham, n_pitch) == 1){
             pitch_period = pitch_period_length(pitch_ham, n_pitch);
+            addExitationSegment(&exitation_signal[0], pitch_period, framenr, n_step, n_frame, 1, gain, &lpc_coeffs[0]);
+
+
             //    //float *pitch_float = addPitch(pitch_period, prev_voiced, &prev_pitch_pos, i, n_frame);
             //    //overlapAdd(&pitch_float[0], &out_float[0], i, n_frame, n_step); 
             //    //free(pitch_float);
             //    prev_voiced = 1;
             //    printf("%d",prev_voiced);
         }
+
         else {
+            addExitationSegment(&exitation_signal[0], pitch_period, framenr, n_step, n_frame, 0, gain, &lpc_coeffs[0]);
+            //next_position = framenr*n_step + n_frame;
             //    //next_pitch_offset = 0;
-            //    float *array = randNoise(n_frame);
-            //    applyGain(&array[0], gain, n_frame);
+            //float *array = randNoise(n_frame);
+            //applyGain(&array[0], gain, n_frame);
             //    //filter(b_coeffs, a_coeffs, &array[0]);
-            //    overlapAdd(&array[0], &out_float[0], i, n_frame, n_step);
+            //overlapAdd(&array[0], &out_float[0], i, n_frame, n_step);
             //    free(array);
             //    prev_voiced = 0; 
         }
@@ -165,9 +187,14 @@ int main(int argc, char **argv)
         free(pitch_segment); // free momey to avoid memlacage. Have to do in in foor loop
         free(sig_segment); // free momey to avoid memlacage. Have to do in in foor loop
     }
-    for (i = 0; i<n_tot_sig; i++) {
-        printf("%f\n", residual_signal[i]);
-    }
+
+    //for (i = 0; i< (int)sfinfo.frames; i++) {
+    //    printf("%f\n", arfiltered_residual[i]);
+    //}
+    //for (i = 0; i < 98000; i++) {
+    //    printf("%f\n", exitation_signal[i]);
+    //}
+    free(exitation_signal);
     free(residual_signal);
 
 

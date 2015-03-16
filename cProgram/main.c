@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     int framenr;
     offset = (n_pitch/2) - (n_frame/2); // Add a offset for the frame since it should be symmetric surrounded by the pitchframe
     
-    float *arfiltered_residual = (float *)calloc(98000, sizeof(float));
+    //float *arfiltered_residual = (float *)calloc(98000, sizeof(float));
 
 
 
@@ -135,10 +135,10 @@ int main(int argc, char **argv)
         ///////////////// TESTED ////////////////////////
 
 
-        float *arfiltered_segment = ARfilter(&lpc_coeffs[0], 14, n_frame, &residual_segment[0], gain);
+        //float *arfiltered_segment = ARfilter(&lpc_coeffs[0], 14, n_frame, &residual_segment[0], gain);
 
 
-        overlapAdd(&arfiltered_segment[0],& arfiltered_residual[0], framenr, n_frame, n_step);
+        //overlapAdd(&arfiltered_segment[0],& arfiltered_residual[0], framenr, n_frame, n_step);
 
         // Estimate gain from residual_signal
         gain = gainEstimation(&residual_segment[0], n_frame);
@@ -189,12 +189,12 @@ int main(int argc, char **argv)
         free(sig_segment); // free momey to avoid memlacage. Have to do in in foor loop
     }
 
-    for (i = 0; i< (int)sfinfo.frames; i++) {
-        printf("%f\n", arfiltered_residual[i]);
-    }
-    //for (i = 0; i < 98000; i++) {
-    //    printf("%f\n", exitation_signal[i]);
+    //for (i = 0; i< (int)sfinfo.frames; i++) {
+    //    printf("%f\n", arfiltered_residual[i]);
     //}
+    for (i = 0; i < 98000; i++) {
+        printf("%f\n", exitation_signal[i]);
+    }
     free(exitation_signal);
     free(residual_signal);
 

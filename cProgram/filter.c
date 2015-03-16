@@ -42,12 +42,13 @@ float *ARfilter(float coeffs[], int order, int n_frame, float *segment, float ga
         if(nt < order){
             Nuse = nt;
         }
-        for (i = 0; i < Nuse; i++){
-            output[n] -= coeffs[i]*mem[((nt-i-1)%order)]; 
+        for (i = 1; i <= Nuse; i++){
+            output[n] -= coeffs[i]*mem[((nt-i)%order)]; 
             //output[n] *= gain;
         }
         //printf("out: %f\n", output[n]);
         mem[nt%order] = output[n];
+        //printf("mem: %d\t %f\n",(nt%order), mem[nt%order]);
         nt++;
     }
 

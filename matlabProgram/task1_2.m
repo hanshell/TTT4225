@@ -59,7 +59,7 @@ for i = 1:iter;
     temp_err = filter(coeffs,1,sig_ham);
     
     %figure; subplot(2,1,1);plot(temp_sig_ham);subplot(2,1,2);plot(temp_err);
-
+    temp_restored=filter(1,coeffs,temp_err);
     gain = gain_estimation(temp_err);    
    
     % check whether our signal is voiced or unvoiced

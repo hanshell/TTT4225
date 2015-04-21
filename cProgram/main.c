@@ -94,7 +94,7 @@ int main(int argc, char **argv)
     /* Works fine */
     int framenr;
     offset = (n_pitch/2) - (n_frame/2); // Add a offset for the frame since it should be symmetric surrounded by the pitchframe
-    
+
     //float *arfiltered_residual = (float *)calloc(98000, sizeof(float));
 
 
@@ -113,6 +113,11 @@ int main(int argc, char **argv)
         float *pitch_ham = hamming_window(pitch_segment, n_pitch);
         float *sig_ham = hamming_window(sig_segment, n_frame);
         /////////////// TESTED ///////////////
+        if (framenr == 1) {
+            for (i = 0; i < 799; i++) {
+                printf("%f\n", pitch_segment[i]);
+            }
+        }
 
 
         //get lpc coefficients -> gives almost the same coeffs as matlab
@@ -190,7 +195,7 @@ int main(int argc, char **argv)
     }
 
     //for (i = 0; i< (int)sfinfo.frames; i++) {
-    //    printf("%f\n", arfiltered_residual[i]);
+    //    printf("%f\n", residual_signal[i]);
     //}
     for (i = 0; i < 98000; i++) {
         printf("%f\n", exitation_signal[i]);

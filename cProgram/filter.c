@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <overlapAdd.h>
 float *MAfilter(float coeffs[], int order, int n_frame, float *segment, float gain) {
 
     /* The order specified in the levinson durbin recursion returns
@@ -24,6 +25,7 @@ float *MAfilter(float coeffs[], int order, int n_frame, float *segment, float ga
         }
         nt++;
     }
+    applyGain(&output[0],gain, n_frame);
     return &output[0];
 }
 
@@ -53,6 +55,7 @@ float *ARfilter(float coeffs[], int order, int n_frame, float *segment, float ga
     }
 
 
+    applyGain(&output[0],gain, n_frame);
     return &output[0];
 
 }

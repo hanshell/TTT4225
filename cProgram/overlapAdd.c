@@ -36,6 +36,9 @@ void addExitationSegment(float *exitation_signal, int pitch_period, int framenr,
             pitches[j] = 1;
         }
         float *filtered = ARfilter(&coeffs[0], 14, n_frame, &pitches[0], gain);
+        //for (j=0;j<n_frame;j++) {
+        //    printf("%f\n",filtered[j]);
+        //}
         overlapAdd(&filtered[0], &exitation_signal[0], framenr, n_frame, n_step);
         free(filtered);
         free(pitches);
